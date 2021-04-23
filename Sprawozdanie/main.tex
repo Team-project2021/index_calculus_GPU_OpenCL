@@ -548,6 +548,34 @@ $x_4 \equiv 28 (mod$ $46)$\\
 \end{algorithm}
 
 \newpage
+\subsection{Pseudokod tworzenia relacji na GPU}
+\begin{algorithm}[H]
+\renewcommand{\algorithmicrequire}{\textbf{Wejście:}}
+\renewcommand{\algorithmicensure}{\textbf{Wyjście:}}
+\begin{algorithmic}[1]
+    \REQUIRE $pows[], N[]$
+    \ENSURE  Układ równań do rozwiązania
+\STATE W, wykorzystujemy n wątków, gdzie n - liczność zbioru N(baza)
+\STATE R = []
+\STATE FACTORS = []
+\FOR{i in range(0, len(N))} 
+\STATE $w_i \longleftarrow pows[i]$ \COMMENT{Każdemu wątkowi jest przyporzadkowana jedna potęga, którą wątek będzie faktoryzował}
+\ENDFOR
+\FOR{i in N}
+\STATE factorsOfWi = []
+\WHILE{$w_i \% i \space == 0$}
+\STATE $w_i = w_i / i$
+\STATE factorsOfWi += i
+\ENDWHILE
+\STATE FACTORS += factorsOfWi
+\ENDFOR
+\STATE R = [(i, j) for i, j in zip(W, FACTORS)]
+\COMMENT{Jeśli po rozłożeniu potęg przez liczby z bazy nie otrzymamy na wątkach $w_i$ wartości 1 to oznacza, że potęga nie rozkłada się w bazie. Będzie to wymagało powtórzenia losowania odpowiedniej ilości potęg generatora, aby zamienić relacje, których potęgi nie rozkładają się w bazie.}
+\RETURN{R, który jest zbiorem relacji na podstawie którego możemy zbudować odpowiedni układ równań liniowych}
+\end{algorithmic}
+\end{algorithm}
+
+\newpage
 
 \subsection{Podzielenie tworzenia relacji między CPU i GPU}
 
