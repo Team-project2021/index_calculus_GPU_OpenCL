@@ -521,13 +521,15 @@ $x_3 \equiv 5 (mod$ $46)$\\
 $x_4 \equiv 28 (mod$ $46)$\\
 \end{center}
 
-\subsection{Pseudokod tworzenia relacji}
+\newpage
+
+\subsection{Pseudokod tworzenia relacji na CPU}
 \begin{algorithm}[H]
 \renewcommand{\algorithmicrequire}{\textbf{Wejście:}}
 \renewcommand{\algorithmicensure}{\textbf{Wyjście:}}
 \begin{algorithmic}[1]
     \REQUIRE $a, b, g, p, N$
-    \ENSURE  Rozwiązanie układu równań
+    \ENSURE  Układ równań do rozwiązania
 \STATE count = 0
 \STATE R = []
 \WHILE{count < len(N)}
@@ -544,6 +546,32 @@ $x_4 \equiv 28 (mod$ $46)$\\
 \RETURN{Układ równań do rozwiązania}
 \end{algorithmic}
 \end{algorithm}
+
+\newpage
+
+\subsection{Podzielenie tworzenia relacji między CPU i GPU}
+
+W naszej implementacji proces tworzenia relacji zamierzamy podzielić między CPU i GPU. Składał on się będzie z trzech kroków:
+\begin{enumerate}
+    \item Wylosowanie przez CPU tyle wykładników potęg generatora ile jest liczb w bazie. Rozłożenie ich w bazie przy pomocy GPU. Zapisanie do pamięci globalnej.\\
+    Proces ten przedstawia poniższy diagram przepływu danych.
+    \begin{center}
+    \includegraphics[width = 15 cm]{Diagram.start — kopia.png}
+    \end{center}
+    \item Ustalenie ile potęg generatora zapisanych w pamięci po wcześniejszym kroku nie rozkłada się w bazie. Wylosowanie odpowiedniej ilości wykładników, obliczenie potęg oraz rozłożenie ich w bazie. Jeśli nie wszystkie potęgi rozkładają się w bazie, powtarzamy ten punkt.\\
+    Proces ten przedstawia poniższy diagram przepływu danych.
+    \begin{center}
+    \includegraphics[width = 15 cm]{Diagram_uzupełnienie_do_n — kopia.png}
+    \end{center}
+    \newpage
+    \item CPU sprawdza czy zbudowany układ równań jest oznaczony, jeśli tak to jest on rozwiązywany przy pomocy GPU. Jeśli układ nie jest oznaczony to CPU losuje kolejny wykładnik potęgi, sprawdza czy potęga rozkłada się w bazie i przekazuje układ na GPU, które rozwiązuje go metodą eliminacji Gaussa.\\
+    Proces ten przedstawia poniższy diagram przepływu danych.
+    \begin{center}
+    \includegraphics[width = 15 cm]{Diagram_dodawanie-relacji — kopia.png}
+    \end{center}
+\end{enumerate}
+
+
 
 \newpage
 
