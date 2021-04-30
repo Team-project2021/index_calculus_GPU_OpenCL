@@ -310,16 +310,13 @@ W przypadku metody eliminacji Gaussa nad Ciałem \begin{math}  F_{p}  \end{math}
 \end{math}
 \newpage
 
-\subsection{lista kroków metody eliminacji Gaussa} \label{Pseudokod Metody eliminacji Gaussa}
-\begin{enumerate}
-   \item[1.] Sprawdź czy pierwszy element w wierszu jest równy 1, jeśli nie to czy jest odwracalny
-   \begin{enumerate}
-       \item[1.1] Jeśli jest odwracalny to pomnóż wykorzystując funkcję mult wiersz przez odwrotność \begin{math}a_{n,1} \end{math} (mod p-1) w przeciwnym wypadku  m+=1 aby przejść do następnego wiersza. Jeśli spełnia on warunek to zamień je.
-    \end{enumerate}
-    \item[2.] Przemnóż wiersz wykorzystując funkcje mult przez pierwszy element (mod p-1) w następnym wierszu . 
-    \item[3.] Wykonaj odejmowanie przemnożonego wiersza z kroku 2 na kolejnym wiersziu (mod p-1). Wykonaj to działanie na wszystkich wierszach 
-    \item[4.] Zwróć macierz A która jest macierzą trójkątną a następnie wyznacz równania.
-\end{enumerate}
+\subsection{Schemat blokowy metody algorytmu Gaussa} \label{Pseudokod Metody eliminacji Gaussa}
+\begin{center}
+    \includegraphics[width=19cm]{gauss.png}
+   
+\end{center}
+
+
 \newpage
 \section{Redukcja Montgomerego}\label{Redukcja Montgomerego}
 Niech \begin{math}R,N,a,b \in \mathbb{Z}\end{math} i GCD(N,R)==1. Dla przedziału  \begin{math}0 \leq T< NR \end{math} redukcję Montgomerego definujemy jako 
