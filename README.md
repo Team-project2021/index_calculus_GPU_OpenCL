@@ -1,2 +1,2 @@
 # index_calculus_GPU_OpenCL
-Implementation of intex calculus by using OpenCL libraly 
+Implementation of index calculus by using OpenCL library 
