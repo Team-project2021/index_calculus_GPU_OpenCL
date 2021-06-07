@@ -10,7 +10,6 @@
 #include <vector>
 
 using namespace std;
-const unsigned long long p = 9223372036854775783;
 
 uint64_t gcd(uint64_t a, uint64_t b)
 {
@@ -26,6 +25,7 @@ uint64_t gcd(uint64_t a, uint64_t b)
 
 uint64_t mult32_mod_p(uint64_t a)
 {
+    const uint64_t p = 9223372036854775783;
     a = a % p;
     uint64_t a1 = a >> 32;
     uint64_t b1 = 0xffffffff & a;
@@ -34,7 +34,8 @@ uint64_t mult32_mod_p(uint64_t a)
 }
 
 uint64_t mult64_mod_p(uint64_t a)
-{
+{   
+    const uint64_t p = 9223372036854775783;
     a = a % p;
     uint64_t a1 = a >> 32;
     uint64_t b1 = 0xffffffff & a;
@@ -45,6 +46,7 @@ uint64_t mult64_mod_p(uint64_t a)
 
 uint64_t mult(uint64_t a, uint64_t b)
 {
+    const uint64_t p = 9223372036854775783;
     uint64_t a1 = a;
     a1 = a1 >> 32;
     uint64_t b1 = 0xffffffff & a;
@@ -79,7 +81,7 @@ std::string kernel_load(std::string path)
 }
 
 
-void vector_add(std::vector<uint64_t> &input_vector, uint64_t a, uint64_t p)
+void vector_add(std::vector<uint64_t> &input_vector, uint64_t a)
 {   
     std::string S = kernel_load("VectorAdd.cl");
 
@@ -99,7 +101,7 @@ void vector_add(std::vector<uint64_t> &input_vector, uint64_t a, uint64_t p)
     {
         HostVector1[c] = input_vector[c];
         HostVector2[c] = a;
-        HostOutputVector[c] = p;
+        HostOutputVector[c] = 0;
     }
 
     //Get an OpenCL platform
@@ -181,27 +183,27 @@ void vector_add(std::vector<uint64_t> &input_vector, uint64_t a, uint64_t p)
 
 
 
-void vector_mult(std::vector<uint64_t>& input_vector, uint64_t a, uint64_t p)
+void vector_mult(std::vector<uint64_t>& input_vector, uint64_t a)
 {
     std::string S = kernel_load("VectorMult.cl");
-
     // Two integer source vectors in Host memory
     std::vector<uint64_t> HostVector1;
     std::vector<uint64_t> HostVector2;
     //Output Vector
     std::vector<uint64_t> HostOutputVector;
 
+    cl_int err;
+
     HostVector1.resize(input_vector.size());
     HostVector2.resize(input_vector.size());
     HostOutputVector.resize(input_vector.size());
     uint64_t size = input_vector.size();
 
-    // Initialize with some interesting repeating data
     for (int c = 0; c < size; c++)
     {
         HostVector1[c] = input_vector[c];
         HostVector2[c] = a;
-        HostOutputVector[c] = p;
+        HostOutputVector[c] = 0;
     }
 
     //Get an OpenCL platform
@@ -244,8 +246,19 @@ void vector_mult(std::vector<uint64_t>& input_vector, uint64_t a, uint64_t p)
     cl_program OpenCLProgram = clCreateProgramWithSource(GPUContext, 1, &cstr, NULL, NULL);
 
     // Build the program (OpenCL JIT compilation)
-    clBuildProgram(OpenCLProgram, 0, NULL, NULL, NULL, NULL);
-
+    err = clBuildProgram(OpenCLProgram, 0, NULL, NULL, NULL, NULL);
+    if (err != CL_SUCCESS)
+    {
+        printf("Nie dziala\n");
+        char str[8192];
+        size_t len;
+        clGetProgramBuildInfo(OpenCLProgram, cdDevice, CL_PROGRAM_BUILD_LOG, 8192, str, &len);
+        if (len > 8192) 
+        {
+            printf("Nie miesci sie\n");
+        }
+        printf("%s", str);
+    }
     // Create a handle to the compiled OpenCL function (Kernel)
     cl_kernel OpenCLVectorAdd = clCreateKernel(OpenCLProgram, "VectorMult", NULL);
 

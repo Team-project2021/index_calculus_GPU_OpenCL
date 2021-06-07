@@ -27,8 +27,8 @@ int main()
             truths_gcd++;
     }
     printf("%d\n", truths_gcd);*/
-    std::vector<cl_ulong> V({ 6,6,6,6,6,6,6,6,6 });
-    vector_mult(V, 2, 17);
+    std::vector<cl_ulong> V({ 1,2,6,6,6,6,6,6,6 });
+    vector_mult(V, 2);
 
     return 0;
 
