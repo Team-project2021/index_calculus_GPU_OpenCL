@@ -5,9 +5,25 @@
 #include "gcd.cpp"
 #include <CL/cl.h>
 #include <vector>
+#include "matrix.h"
 
 int main()
-{
+{   
+    Matrix m(5);
+    m.add_row({ 1,2,3,4,5 });
+    m.add_row({ 6,7,8,9,10});
+    m.add_row({ 4,44,6,1,88});
+    m(2, 1) = 15;
+    m.print_matrix();
+    int res = m.find_inv(1, 30);
+    std::cout << res << "\n";
+    res = m.find_inv(1, 210);
+    std::cout << res << "\n";
+    res = m.find_inv(2, 6);
+    std::cout << res << "\n";
+    res = m.find_inv(2, 9);
+    std::cout << res << "\n";
+
 
     //std::string S = kernel_load("VectorMult.cl");
     //std::cout << S;
@@ -30,7 +46,10 @@ int main()
     std::vector<cl_ulong> V({ 1,2,6,6,6,6,6,6,6 });
     vector_mult(V, 2);
 
+
     return 0;
 
 }
+
+
 
