@@ -10,19 +10,19 @@
 int main()
 {   
     Matrix m(5);
-    m.add_row({ 1,2,3,4,5 });
-    m.add_row({ 6,7,8,9,10});
-    m.add_row({ 4,44,6,1,88});
+    m.add_row({ 1, 2, 3, 4, 5 });
+    m.add_row({ 6, 7, 8, 9, 10});
+    m.add_row({ 4, 44,6, 1, 88});
     m(2, 1) = 15;
     m.print_matrix();
-    int res = m.find_inv(1, 30);
+    /*int res = m.find_inv(1, 30);
     std::cout << res << "\n";
     res = m.find_inv(1, 210);
     std::cout << res << "\n";
     res = m.find_inv(2, 6);
     std::cout << res << "\n";
     res = m.find_inv(2, 9);
-    std::cout << res << "\n";
+    std::cout << res << "\n";*/
 
 
     //std::string S = kernel_load("VectorMult.cl");
@@ -43,13 +43,14 @@ int main()
             truths_gcd++;
     }
     printf("%d\n", truths_gcd);*/
-    std::vector<cl_ulong> V({ 1,2,6,6,6,6,6,6,6 });
-    vector_mult(V, 2);
+    /*std::vector<cl_ulong> V({ 1,2,6,6,6,6,6,6,6 });
+    vector_mult(V, 2);*/
 
+    m.swap_rows(0, 1);
+
+    m.print_matrix();
 
     return 0;
 
 }
-
-
 
