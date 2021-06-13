@@ -283,5 +283,23 @@ void vector_mult(std::vector<uint64_t>& input_vector, uint64_t a)
     for (int i = 0; i < size; i++)
         printf("[%llu * %llu = %llu]\n", HostVector1[i], HostVector2[i], HostOutputVector[i]);
 
+}
+
+
+
+//std::vector<uint64_t>
+void gauss(Matrix A, std::vector<uint64_t> x) {
+    const uint64_t p = 9223372036854775783;
+    int invert_row_index;
+
+    uint64_t x_inv, y_inv;
+
+    for (int i = 0; i < A.n_cols(); i++) {
+        invert_row_index = A.find_inv(i, 7);
+        A.swap_rows(invert_row_index, i);
+        for (int j = 0; j < A.n_cols(); j++) {
+            uint64_t xgcd = gcdExtended(A.at(i, j), p - 1, &x_inv, &y_inv);
+        }
+    }
 
 }
