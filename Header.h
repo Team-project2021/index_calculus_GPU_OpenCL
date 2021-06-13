@@ -8,20 +8,10 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
-
+#include "matrix.h"
 using namespace std;
 
-uint64_t gcd(uint64_t a, uint64_t b)
-{
-    while (a != b)
-    {
-        if (a > b)
-            a -= b;
-        else
-            b -= a;
-    }
-    return a;
-}
+
 
 uint64_t mult32_mod_p(uint64_t a)
 {
@@ -292,4 +282,6 @@ void vector_mult(std::vector<uint64_t>& input_vector, uint64_t a)
 
     for (int i = 0; i < size; i++)
         printf("[%llu * %llu = %llu]\n", HostVector1[i], HostVector2[i], HostOutputVector[i]);
+
+
 }
