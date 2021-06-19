@@ -142,7 +142,7 @@ public:
 
 		for (int i = 0; i < cols; i++) {
 			invertable_row_index = find_inv(i, q);
-			if (invertable_row_index == -1)
+			if (invertable_row_index == -1 or invertable_row_index < i)
 			{
 				return -1;
 			}
@@ -166,8 +166,15 @@ public:
 
 			reassign_row(temp, i);
 
+			cout << endl << endl;
+			print_matrix();
+
 			for (int j = i + 1; j < n_rows(); j++)
 			{
+				temp = get_row(i);
+				xgcd1= gcdExtended(this->operator()(i, i), q, &x_inv1, &y_inv);
+				vector_mult(temp, x_inv1);
+
 				temp1 = get_row(j);
 				vector_mult(temp, at(j,i));
 				//for (auto& w : temp)
@@ -181,6 +188,12 @@ public:
 				//	cout << temp1[k] << " ";
 				//cout << "dupa" << endl;
 				reassign_row(temp1, j);
+
+				cout << endl << endl;
+				print_matrix();
+				cout << endl;
+				cout << j;
+
 			}
 
 			/*print_matrix();
