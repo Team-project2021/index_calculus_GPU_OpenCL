@@ -68,7 +68,6 @@ public:
 
 	int find_inv(size_t c, uint64_t n) {
 		uint64_t rows = n_rows();
-		vector<int> V;
 		for (int i = 0; i < rows; i++) {
 			uint64_t element = this->operator()(i, c);
 			uint64_t res = gcd(element, n);
@@ -159,9 +158,6 @@ public:
 
 			reassign_row(temp, i);
 
-			//cout << endl << endl;
-			//print_matrix();
-
 			for (int j = i + 1; j < n_rows(); j++)
 			{
 				temp = get_row(i);
@@ -174,7 +170,7 @@ public:
 				vector_sub(temp1, temp);
 				reassign_row(temp1, j);
 			}
-			cout << "Kolumna " << i << "ogarnieta"<< endl;
+			cout << "Kolumna " << i << " ogarnieta"<< endl;
 		}
 		return 1;
 	}
