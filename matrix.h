@@ -4,7 +4,9 @@
 #include <iostream>
 #include <tuple>
 #include<algorithm>
-
+#include <fstream>
+#include <string>
+#include <sstream>
 using namespace std;
 
 
@@ -95,12 +97,11 @@ public:
 	void print_matrix() {
 		for (int i = 0; i < n_rows(); i++) {
 			for (int j = 0; j < n_cols(); j++) {
-				std::cout << "\t" << at(i, j);
-
+				cout << "\t" << at(i, j);
 			}
-			std::cout << "\n";
+			cout << "\n";
 		}
-
+		cout << endl;
 	}
 	size_t size() {
 		return matrix.size();
@@ -129,7 +130,7 @@ public:
 		}
 	}
 
-	int gauss(vector<uint64_t> x, uint64_t q) {
+	int gaussian_elimination(uint64_t q) {
 		int invertable_row_index;
 
 		vector<uint64_t> temp;
@@ -147,16 +148,8 @@ public:
 				return -1;
 			}
 
-			cout << endl << endl;
-			print_matrix();
-
 			temp = get_row(invertable_row_index);
 			swap_rows(i, invertable_row_index);
-			
-			cout << endl << endl;
-			print_matrix();
-
-			//cout << "Wiersz odwracalny: " << invertable_row_index << endl;
 
 			xgcd = gcdExtended(this->operator()(i, i), q, &x_inv, &y_inv);
 			
@@ -166,46 +159,22 @@ public:
 
 			reassign_row(temp, i);
 
-			cout << endl << endl;
-			print_matrix();
+			//cout << endl << endl;
+			//print_matrix();
 
 			for (int j = i + 1; j < n_rows(); j++)
 			{
 				temp = get_row(i);
-				xgcd1= gcdExtended(this->operator()(i, i), q, &x_inv1, &y_inv);
+				xgcd1= gcdExtended(this->operator()(i, i), q, &x_inv1, &y_inv1);
 				vector_mult(temp, x_inv1);
 
 				temp1 = get_row(j);
 				vector_mult(temp, at(j,i));
-				//for (auto& w : temp)
-				//	cout << w << endl;
-				//cout << endl << "temp" << endl;
+
 				vector_sub(temp1, temp);
-				//for (auto& w : temp1)
-				//	cout << w << endl;
-				//cout << endl << "temp1" << endl;
-				//for (int k = 0; k < cols; k++)
-				//	cout << temp1[k] << " ";
-				//cout << "dupa" << endl;
 				reassign_row(temp1, j);
-
-				cout << endl << endl;
-				print_matrix();
-				cout << endl;
-				cout << j;
-
 			}
-
-			/*print_matrix();
-
-			cout << endl;*/
-
-
-			//for (int j = 0; j < cols; j++)
-			//	cout << matrix[j] << " ";
-			//cout << endl;
-
-
+			cout << "Kolumna " << i << "ogarnieta"<< endl;
 		}
 		return 1;
 	}
@@ -233,8 +202,6 @@ public:
 		for (int c = 0; c < size; c++)
 		{
 			HostVector1[c] = input_vector[c];
-			//HostVector2[c] = a;
-			//HostOutputVector[c] = 0;
 		}
 
 		//Get an OpenCL platform
@@ -323,9 +290,6 @@ public:
 		clReleaseMemObject(GPUVector1);
 		clReleaseMemObject(GPUVector2);
 		clReleaseMemObject(GPUOutputVector);
-
-		//for (int i = 0; i < size; i++)
-			//printf("[%llu * %llu = %llu]\n", HostVector1[i], HostVector2[i], HostOutputVector[i]);
 
 	}
 
@@ -430,9 +394,6 @@ public:
 		clReleaseMemObject(GPUVector1);
 		clReleaseMemObject(GPUVector2);
 		clReleaseMemObject(GPUOutputVector);
-
-		//for (int i = 0; i < size; i++)
-			//printf("[%llu + %llu = %llu]\n", HostVector1[i], HostVector2[i], HostOutputVector[i]);
 	}
 
 	

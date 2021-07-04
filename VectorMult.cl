@@ -1,5 +1,4 @@
 const ulong p = 9223372036854775783;
-//const ulong p = 7;
 
 ulong mult32_mod_p(ulong a)
 {
@@ -40,6 +39,5 @@ ulong mult(ulong a, ulong b)
 __kernel void VectorMult(__global ulong* c, __global ulong* a, __global ulong* b)
 {	
 	unsigned long long n = get_global_id(0);
-	//c[n] = mult(a[n], b[n]);
-    c[n] = (a[n] * b[n]) % 2147483647;
+	c[n] = mult(a[n], b[n]);
 }
