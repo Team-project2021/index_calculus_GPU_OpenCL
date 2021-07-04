@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <tuple>
-#include<algorithm>
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <sstream>
