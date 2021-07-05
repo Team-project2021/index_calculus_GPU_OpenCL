@@ -148,8 +148,6 @@ int main()
     uint64_t size = N.size();
     Matrix M(size);
 
-
-
     tuple<vector<uint64_t>, uint64_t> temp = building_relations(N, 3, p);
     for (int i = 0; i < size; i++)
     {
