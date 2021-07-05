@@ -174,38 +174,41 @@ int main()
     cout << y << endl;
 
 
-    cout << power_mod_p(3, 11223344556677);
+    //cout << power_mod_p(3, 11223344556677);
     //cout << x;
 
 
 
 
-    //int x = -1;
-    //int i = 0;
-    //while (true)
-    //{
-    //    x = M.gaussian_elimination(p);
-    //    M.print_matrix();
-    //    if (x == -1)
-    //    {
-    //        temp = building_relations(N, 7, p);
-    //        M.print_matrix();
-    //        M.add_row(get<0>(temp));
-    //        X.push_back(get<1>(temp));
-    //        cout << i << " iteracja, ilosc wierszy w macierzy " << M.n_rows() << endl;
-
-    //        //M.gaussian_elimination(p);
-    //        //cout << i << " iteracja, ilosc wierszy w macierzy "<< M.n_rows() << endl;
-    //        M.print_matrix();
-    //    }
-    //    else
-    //    {
-    //        break;
-    //    }
-    //    i++;
-    //    //cout << x;
-    //}
-    //M.print_matrix();
+    int x = -1;
+    int i = 0;
+    while (true)
+    {
+        x = M.gaussian_elimination(p);
+        cout << "Przed dodaniem relacji " << endl;
+        M.print_matrix();
+        if (x == -1)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                temp = building_relations(N, 7, p);
+                M.add_row(get<0>(temp));
+                X.push_back(get<1>(temp));
+            }
+            cout << i << " iteracja, ilosc wierszy w macierzy " << M.n_rows() << endl;
+            cout << "Po dodaniu relacji" << endl;
+            //M.gaussian_elimination(p);
+            //cout << i << " iteracja, ilosc wierszy w macierzy "<< M.n_rows() << endl;
+            M.print_matrix();
+        }
+        else
+        {
+            break;
+        }
+        i++;
+        //cout << x;
+    }
+    M.print_matrix();
 
     return 0;
 }
