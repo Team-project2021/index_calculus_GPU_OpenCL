@@ -15,7 +15,7 @@
 
 using namespace std;
 
-uint64_t p = 2147483647;
+uint64_t p = 9223372036854775783;
 
 void print_vector(vector<uint64_t>& vec) {
     for (int i = 0; i < vec.size(); i++) {
@@ -101,6 +101,8 @@ tuple<vector<uint64_t>, uint64_t> building_relations(vector<uint64_t> N, uint64_
     {
         exp = randomness.rand_uint64_t() % 10000; // spr
         gen_temp = power_mod_p(g, exp);
+        //cout << exp << endl;
+        //gen_temp = (uint64_t)pow(g, exp) % p;
         powers = factor_in_base(N, gen_temp);
         non_zero = check_if_non_zero(powers);
     }
@@ -120,6 +122,7 @@ tuple<vector<uint64_t>, uint64_t> specific_relation(vector<uint64_t> N, uint64_t
     {
         exp = randomness.rand_uint64_t() % 10000; // spr
         gen_temp = power_mod_p(g, exp);
+        //gen_temp = (uint64_t)pow(g, exp) % p;
         powers = factor_in_base(N, gen_temp);
     }
     result = make_tuple(powers, gen_temp);
@@ -139,41 +142,61 @@ int main()
 
 
 
-    tuple<vector<uint64_t>, uint64_t> temp = building_relations(N, 7, p);
+    tuple<vector<uint64_t>, uint64_t> temp = building_relations(N, 3, p);
     for (int i = 0; i < size; i++)
     {
-        temp = building_relations(N, 7, p);
+        temp = building_relations(N, 3, p);
         M.add_row(get<0>(temp));
         X.push_back(get<1>(temp));
     }
     M.print_matrix();
     cout << "Macierz kwadratowa wyznaczona" << endl;
     
+    
+    ////int x = M1.gaussian_elimination(p);
+    Matrix M2(5);
 
-    int x = -1;
-    int i = 0;
-    while (true)
-    {
-        x = M.gaussian_elimination(p);
-        if (x == -1)
-        {
-            temp = specific_relation(N, 7, p, i);
-            cout << i << " iteracja, ilosc wierszy w macierzy " << M.n_rows() << endl;
-            M.print_matrix();
-            M.add_row(get<0>(temp));
-            X.push_back(get<1>(temp));
-            M.gaussian_elimination(p);
-            cout << i << " iteracja, ilosc wierszy w macierzy "<< M.n_rows() << endl;
-            M.print_matrix();
-        }
-        else
-        {
-            break;
-        }
-        i++;
-        //cout << x;
-    }
-    M.print_matrix();
+    M2.add_row({ 2,4,2,0,1 });
+    M2.add_row({ 2147483646,1,0,11,17});
+    M2.add_row({ 1,0,4,2147483643,2147483645});
+    M2.add_row({ 2147483628,0,0,2147483646,2147483642});
+    M2.add_row({ 2147483646,2,2147483645,3,4});
+
+    int y = M2.gaussian_elimination(p);
+
+    M2.print_matrix();
+    cout << y;
+    //cout << x;
+
+
+
+
+    //int x = -1;
+    //int i = 0;
+    //while (true)
+    //{
+    //    x = M.gaussian_elimination(p);
+    //    M.print_matrix();
+    //    if (x == -1)
+    //    {
+    //        temp = building_relations(N, 7, p);
+    //        M.print_matrix();
+    //        M.add_row(get<0>(temp));
+    //        X.push_back(get<1>(temp));
+    //        cout << i << " iteracja, ilosc wierszy w macierzy " << M.n_rows() << endl;
+
+    //        //M.gaussian_elimination(p);
+    //        //cout << i << " iteracja, ilosc wierszy w macierzy "<< M.n_rows() << endl;
+    //        M.print_matrix();
+    //    }
+    //    else
+    //    {
+    //        break;
+    //    }
+    //    i++;
+    //    //cout << x;
+    //}
+    //M.print_matrix();
 
     return 0;
 }

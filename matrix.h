@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <tuple>
-#include<algorithm>
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -66,9 +66,9 @@ public:
 		return matrix[c + r * cols];
 	}
 
-	int find_inv(size_t c, uint64_t n) {
+	int find_inv(size_t c, uint64_t n, uint64_t start_row) {
 		uint64_t rows = n_rows();
-		for (int i = 0; i < rows; i++) {
+		for (int i = start_row; i < rows; i++) {
 			uint64_t element = this->operator()(i, c);
 			uint64_t res = gcd(element, n);
 			if (res == 1) {
@@ -141,7 +141,7 @@ public:
 		uint64_t x_inv1, y_inv1;
 
 		for (int i = 0; i < cols; i++) {
-			invertable_row_index = find_inv(i, q);
+			invertable_row_index = find_inv(i, q, i);
 			if (invertable_row_index == -1 or invertable_row_index < i)
 			{
 				return -1;
@@ -161,7 +161,7 @@ public:
 			for (int j = i + 1; j < n_rows(); j++)
 			{
 				temp = get_row(i);
-				xgcd1= gcdExtended(this->operator()(i, i), q, &x_inv1, &y_inv1);
+				xgcd1= gcdExtended(this->operator()(i, i), q-1, &x_inv1, &y_inv1);
 				vector_mult(temp, x_inv1);
 
 				temp1 = get_row(j);
