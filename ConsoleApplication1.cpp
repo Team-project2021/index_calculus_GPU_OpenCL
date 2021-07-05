@@ -42,12 +42,20 @@ private:
 
 uint64_t power_mod_p(uint64_t a, uint64_t b)
 {
-    uint64_t temp = 1;
-    for (int i = 0; i < b; i++)
+    uint64_t acc = 1;
+    uint64_t pow = a;
+    
+    while (b > 0)
     {
-        temp = mult(temp, a);
+        if (b & 0x1)
+        {
+            acc = mult(acc, pow);
+        }
+        pow = mult(pow, pow);
+        b = b >> 1;
     }
-    return temp;
+    return acc;
+
 }
 
 vector<uint64_t> factor_in_base(vector<uint64_t> N, uint64_t X)
@@ -99,7 +107,7 @@ tuple<vector<uint64_t>, uint64_t> building_relations(vector<uint64_t> N, uint64_
 
     while (non_zero != true)
     {
-        exp = randomness.rand_uint64_t() % 10000; // spr
+        exp = randomness.rand_uint64_t(); // spr
         gen_temp = power_mod_p(g, exp);
         //cout << exp << endl;
         //gen_temp = (uint64_t)pow(g, exp) % p;
@@ -120,7 +128,7 @@ tuple<vector<uint64_t>, uint64_t> specific_relation(vector<uint64_t> N, uint64_t
 
     while (powers[index] == 0)
     {
-        exp = randomness.rand_uint64_t() % 10000; // spr
+        exp = randomness.rand_uint64_t() % p-1; // spr
         gen_temp = power_mod_p(g, exp);
         //gen_temp = (uint64_t)pow(g, exp) % p;
         powers = factor_in_base(N, gen_temp);
@@ -152,8 +160,6 @@ int main()
     M.print_matrix();
     cout << "Macierz kwadratowa wyznaczona" << endl;
     
-    
-    ////int x = M1.gaussian_elimination(p);
     Matrix M2(5);
 
     M2.add_row({ 2,4,2,0,1 });
@@ -165,7 +171,10 @@ int main()
     int y = M2.gaussian_elimination(p);
 
     M2.print_matrix();
-    cout << y;
+    cout << y << endl;
+
+
+    cout << power_mod_p(3, 11223344556677);
     //cout << x;
 
 
