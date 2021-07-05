@@ -41,3 +41,12 @@ __kernel void VectorMult(__global ulong* c, __global ulong* a, __global ulong* b
 	unsigned long long n = get_global_id(0);
 	c[n] = mult(a[n], b[n]);
 }
+
+
+
+__kernel void VectorAdd(__global ulong* c, __global ulong* a, __global ulong* b)
+{
+    ulong p = 9223372036854775783;
+    unsigned int n = get_global_id(0);
+    c[n] = (a[n] - b[n] + p) % p;
+}

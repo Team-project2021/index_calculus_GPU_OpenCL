@@ -376,7 +376,7 @@ public:
 			WorkSize, NULL, 0, NULL, NULL);
 
 		// Copy the output in GPU memory back to CPU memory
-		clEnqueueReadBuffer(cqCommandQueue, GPUOutputVector, CL_TRUE, 0,
+		clEnqueueReadBuffer(cqCommandQueue, GPUOutputVector, CL_FALSE, 0,
 			size * sizeof(uint64_t), HostOutputVector.data(), 0, NULL, NULL);
 
 		for (int i = 0; i < size; i++)
