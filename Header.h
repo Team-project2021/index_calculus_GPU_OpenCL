@@ -1,14 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <CL/cl.h>
-#include <climits>
-#include <string>
-#include <fstream>
-#include <sstream>
 #include <iostream>
-#include <vector>
-#include "matrix.h"
 
 uint64_t mult32_mod_p(uint64_t a)
 {
