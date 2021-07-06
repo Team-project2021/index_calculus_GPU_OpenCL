@@ -1,4 +1,3 @@
-//#include "Header.h"
 #include "Header1.h"
 #include "Header2.h"
 #include "gcd.cpp"
@@ -15,7 +14,7 @@
 
 using namespace std;
 
-uint64_t p = 9223372036854775783;
+uint64_t p = 11;
 
 void print_vector(vector<uint64_t>& vec) {
     for (int i = 0; i < vec.size(); i++) {
@@ -44,7 +43,7 @@ uint64_t power_mod_p(uint64_t a, uint64_t b)
 {
     uint64_t acc = 1;
     uint64_t pow = a;
-    
+
     while (b > 0)
     {
         if (b & 0x1)
@@ -70,12 +69,11 @@ vector<uint64_t> factor_in_base(vector<uint64_t> N, uint64_t X)
         while (temp == 0)
         {
             temp = X % power_mod_p(N[i], power);
-            //cout << temp;
-            if(temp == 0)
+            if (temp == 0)
                 power++;
         }
         powers[i] = power - 1;
-    }   
+    }
     return powers;
 }
 
@@ -107,14 +105,12 @@ tuple<vector<uint64_t>, uint64_t> building_relations(vector<uint64_t> N, uint64_
 
     while (non_zero != true)
     {
-        exp = randomness.rand_uint64_t(); // spr
+        exp = randomness.rand_uint64_t();
         gen_temp = power_mod_p(g, exp);
-        //cout << exp << endl;
-        //gen_temp = (uint64_t)pow(g, exp) % p;
         powers = factor_in_base(N, gen_temp);
         non_zero = check_if_non_zero(powers);
     }
-    
+
     result = make_tuple(powers, gen_temp);
     return result;
 }
@@ -139,7 +135,7 @@ int main()
     //}
     ////M.print_matrix();
     //cout << "Macierz kwadratowa wyznaczona" << endl;
-    
+
     Matrix M2(X, 3);
 
     //M2.add_row({ 2,4,2,0,1 });
@@ -157,7 +153,7 @@ int main()
         cout << X[i] << " ";
     cout << endl;
 
-    int y = M2.gaussian_elimination(p);
+    M2.solve_system(p);
 
     M2.print_matrix();
     for (int i = 0; i < X.size(); i++)
