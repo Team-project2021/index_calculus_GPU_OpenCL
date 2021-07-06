@@ -5,7 +5,7 @@
 
 uint64_t mult32_mod_p(uint64_t a)
 {
-    const uint64_t p = 11;
+    const uint64_t p = 9223372036854775783;
     a = a % p;
     uint64_t a1 = a >> 32;
     uint64_t b1 = 0xffffffff & a;
@@ -15,7 +15,7 @@ uint64_t mult32_mod_p(uint64_t a)
 
 uint64_t mult64_mod_p(uint64_t a)
 {
-    const uint64_t p = 11;
+    const uint64_t p = 9223372036854775783;
     a = a % p;
     uint64_t a1 = a >> 32;
     uint64_t b1 = 0xffffffff & a;
@@ -26,7 +26,7 @@ uint64_t mult64_mod_p(uint64_t a)
 
 uint64_t mult(uint64_t a, uint64_t b)
 {
-    const uint64_t p = 11;
+    const uint64_t p = 9223372036854775783;
     uint64_t a1 = a;
     a1 = a1 >> 32;
     uint64_t b1 = 0xffffffff & a;
