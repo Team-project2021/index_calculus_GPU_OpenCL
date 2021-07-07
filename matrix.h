@@ -8,7 +8,7 @@
 #include <string>
 #include <sstream>
 #include "Header.h"
-//#include "ConsoleApplication1.cpp"
+
 using namespace std;
 
 
@@ -112,7 +112,7 @@ public:
 	size_t n_rows() {
 		return matrix.size() / cols;
 	}
-	void add_row(std::vector<uint64_t> row) {
+	void add_row(vector<uint64_t> row) {
 
 		if (row.size() != cols) {
 			throw std::invalid_argument("row.size() != cols");
@@ -222,7 +222,7 @@ public:
 
 	vector<uint64_t> solve_system(uint64_t q)
 	{
-		int x = gaussian_elimination(q);
+		//int x = gaussian_elimination(q);
 
 		cout << "Po Gaussie " << endl;
 		print_matrix();
