@@ -3,10 +3,12 @@
 #include <stdexcept>
 #include <iostream>
 #include <tuple>
-#include<algorithm>
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <sstream>
+#include "Header.h"
+
 using namespace std;
 
 
@@ -41,17 +43,43 @@ std::string kernel_load(std::string path)
 	return buffer.str();
 }
 
+tuple<cl_platform_id, cl_device_id, cl_context_properties, cl_context, cl_command_queue > initialize_openCL()
+{
+	cl_platform_id cpPlatform;
+	clGetPlatformIDs(1, &cpPlatform, NULL);
+
+	// Get a GPU device
+	cl_device_id cdDevice;
+	clGetDeviceIDs(cpPlatform, CL_DEVICE_TYPE_GPU, 1, &cdDevice, NULL);
+
+	char cBuffer[1024];
+	clGetDeviceInfo(cdDevice, CL_DEVICE_NAME, sizeof(cBuffer), &cBuffer, NULL);
+	//printf("CL_DEVICE_NAME: %s\n", cBuffer);
+	clGetDeviceInfo(cdDevice, CL_DRIVER_VERSION, sizeof(cBuffer), &cBuffer, NULL);
+	//printf("CL_DRIVER_VERSION: %s\n\n", cBuffer);
+	cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (uint64_t)cpPlatform, 0 };
+	// Create a context to run OpenCL enabled GPU
+
+	cl_context GPUContext = clCreateContextFromType(properties, CL_DEVICE_TYPE_GPU, NULL, NULL, NULL);
+
+	// Create a command-queue on the GPU device
+	cl_command_queue cqCommandQueue = clCreateCommandQueueWithProperties(GPUContext, cdDevice, 0, NULL);
+	tuple<cl_platform_id, cl_device_id, cl_context_properties, cl_context, cl_command_queue > output = make_tuple(cpPlatform, cdDevice, *properties, GPUContext, cqCommandQueue);
+	return output;
+}
 
 class Matrix
 {
 private:
-	const uint64_t p = 9223372036854775783;
 	const size_t cols;
 	vector<uint64_t> matrix;
+	tuple<cl_platform_id, cl_device_id, cl_context_properties, cl_context, cl_command_queue > stuff = initialize_openCL();
+
 public:
+	vector<uint64_t> X;
 
-
-	Matrix(size_t c) : cols(c) {
+	Matrix(vector<uint64_t> X, size_t c) : cols(c) {
+		this->X = X;
 	}
 
 	uint64_t* data() {
@@ -66,12 +94,13 @@ public:
 		return matrix[c + r * cols];
 	}
 
-	int find_inv(size_t c, uint64_t n) {
+	int find_inv(size_t c, uint64_t n, uint64_t start_row) {
 		uint64_t rows = n_rows();
-		for (int i = 0; i < rows; i++) {
+		for (int i = start_row; i < rows; i++) {
 			uint64_t element = this->operator()(i, c);
-			uint64_t res = gcd(element, n);
-			if (res == 1) {
+			uint64_t x_inv, y_inv;
+			uint64_t res = gcdExtended(element, n, &x_inv, &y_inv);
+			if (res == 1 and multS(element, (x_inv + n) % n, n) == 1) {
 				return i;
 			}
 		}
@@ -83,7 +112,7 @@ public:
 	size_t n_rows() {
 		return matrix.size() / cols;
 	}
-	void add_row(std::vector<uint64_t> row) {
+	void add_row(vector<uint64_t> row) {
 
 		if (row.size() != cols) {
 			throw std::invalid_argument("row.size() != cols");
@@ -129,54 +158,114 @@ public:
 		}
 	}
 
-	int gaussian_elimination(uint64_t q) {
+	int gaussian_elimination(uint64_t p) {
 		int invertable_row_index;
 
 		vector<uint64_t> temp;
 		vector<uint64_t> temp1;
+		uint64_t tempX;
+		uint64_t tempX1;
+
 		uint64_t xgcd;
 		uint64_t xgcd1;
+
 
 		uint64_t x_inv, y_inv;
 		uint64_t x_inv1, y_inv1;
 
 		for (int i = 0; i < cols; i++) {
-			invertable_row_index = find_inv(i, q);
+			invertable_row_index = find_inv(i, p, i);
 			if (invertable_row_index == -1 or invertable_row_index < i)
 			{
 				return -1;
 			}
 
 			temp = get_row(invertable_row_index);
+			tempX = X[invertable_row_index];
+
 			swap_rows(i, invertable_row_index);
+			swap(X[i], X[invertable_row_index]);
 
-			xgcd = gcdExtended(this->operator()(i, i), q, &x_inv, &y_inv);
-			
-			x_inv = (x_inv + q) % q;
+			xgcd = gcdExtended(this->operator()(i, i), p, &x_inv, &y_inv);
 
-			vector_mult(temp, x_inv);
+			x_inv = (x_inv + p) % p;
+		/*	cout << multS(x_inv, this->operator()(i, i), p) << endl;
+			if (multS(x_inv, this->operator()(i, i), p) != 1)
+				return -1;*/
+
+			vector_mult(stuff, temp, x_inv);
+			tempX = multS(tempX, x_inv, p);
 
 			reassign_row(temp, i);
+			X[i] = tempX;
 
 			for (int j = i + 1; j < n_rows(); j++)
 			{
 				temp = get_row(i);
-				xgcd1= gcdExtended(this->operator()(i, i), q, &x_inv1, &y_inv1);
-				vector_mult(temp, x_inv1);
+				tempX = X[i];
+
+				xgcd1 = gcdExtended(this->operator()(i, i), p, &x_inv1, &y_inv1);
+				vector_mult(stuff, temp, x_inv1);
+				tempX = multS(tempX, x_inv1, p);
 
 				temp1 = get_row(j);
-				vector_mult(temp, at(j,i));
+				tempX1 = X[j];
+				vector_mult(stuff, temp, at(j, i));
+				tempX = multS(tempX, at(j, i), p);
 
-				vector_sub(temp1, temp);
+				vector_sub(stuff, temp1, temp);
+				tempX1 = (tempX1 - tempX + p) % p;
 				reassign_row(temp1, j);
+				X[j] = tempX1;
 			}
-			//cout << "Kolumna " << i << " ogarnieta"<< endl;
 		}
 		return 0;
 	}
 
+	vector<uint64_t> solve_system(uint64_t p)
+	{
+		//uint64_t n = p - 1;
 
-	void vector_mult(std::vector<uint64_t>& input_vector, uint64_t a)
+		cout << "Po Gaussie " << endl;
+		print_matrix();
+		for (int i = 0; i < X.size(); i++)
+			cout << X[i] << " ";
+		cout << endl;
+
+		vector<uint64_t> temp;
+		vector<uint64_t> temp1;
+		vector<uint64_t> temp2;
+
+		uint64_t tempX;
+		uint64_t tempX1;
+		uint64_t tempX2;
+
+		for (int i = cols - 1; i >= 0; i--)
+		{
+			temp = get_row(i);
+			tempX = X[i];
+
+			for (int j = i; j >= 1; j--)
+			{
+				temp1 = temp;
+				tempX1 = tempX;
+				temp2 = get_row(j-1);
+				tempX2 = X[j - 1];
+
+				vector_mult(stuff, temp1, at(j-1, i));
+				tempX1 = multS(tempX1, X[j - 1], p);
+				vector_sub(stuff, temp2, temp1);
+				tempX2 = (tempX2 - tempX1 + p) % p;
+
+				reassign_row(temp2, j - 1);
+				X[j - 1] = tempX2;
+			}
+		}
+		return X;
+	}
+
+
+	void vector_mult(tuple<cl_platform_id, cl_device_id, cl_context_properties, cl_context, cl_command_queue > stuff, vector<uint64_t>& input_vector, uint64_t a)
 	{
 		std::string S = kernel_load("VectorMult.cl");
 		// Two integer source vectors in Host memory
@@ -199,45 +288,21 @@ public:
 		{
 			HostVector1[c] = input_vector[c];
 		}
-
-		//Get an OpenCL platform
-
-		cl_platform_id cpPlatform;
-		clGetPlatformIDs(1, &cpPlatform, NULL);
-
-		// Get a GPU device
-		cl_device_id cdDevice;
-		clGetDeviceIDs(cpPlatform, CL_DEVICE_TYPE_GPU, 1, &cdDevice, NULL);
-
-		char cBuffer[1024];
-		clGetDeviceInfo(cdDevice, CL_DEVICE_NAME, sizeof(cBuffer), &cBuffer, NULL);
-		//printf("CL_DEVICE_NAME: %s\n", cBuffer);
-		clGetDeviceInfo(cdDevice, CL_DRIVER_VERSION, sizeof(cBuffer), &cBuffer, NULL);
-		//printf("CL_DRIVER_VERSION: %s\n\n", cBuffer);
-		cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (uint64_t)cpPlatform, 0 };
-		// Create a context to run OpenCL enabled GPU
-
-		cl_context GPUContext = clCreateContextFromType(properties, CL_DEVICE_TYPE_GPU, NULL, NULL, NULL);
-
-		// Create a command-queue on the GPU device
-		cl_command_queue cqCommandQueue = clCreateCommandQueueWithProperties(GPUContext, cdDevice, 0, NULL);
-
-		// Allocate GPU memory for source vectors AND initialize from CPU memory
-
-		cl_mem GPUVector1 = clCreateBuffer(GPUContext, CL_MEM_READ_ONLY |
+		
+		cl_mem GPUVector1 = clCreateBuffer(get<3>(stuff), CL_MEM_READ_ONLY |
 			CL_MEM_COPY_HOST_PTR, sizeof(uint64_t) * size, HostVector1.data(), NULL);
 
-		cl_mem GPUVector2 = clCreateBuffer(GPUContext, CL_MEM_READ_ONLY |
+		cl_mem GPUVector2 = clCreateBuffer(get<3>(stuff), CL_MEM_READ_ONLY |
 			CL_MEM_COPY_HOST_PTR, sizeof(uint64_t) * size, HostVector2.data(), NULL);
 
 		// Allocate output memory on GPU
-		cl_mem GPUOutputVector = clCreateBuffer(GPUContext, CL_MEM_WRITE_ONLY,
+		cl_mem GPUOutputVector = clCreateBuffer(get<3>(stuff), CL_MEM_WRITE_ONLY,
 			sizeof(uint64_t) * size, NULL, NULL);
 
 		const char* cstr = S.c_str();
 
 		// Create OpenCL program with source code
-		cl_program OpenCLProgram = clCreateProgramWithSource(GPUContext, 1, &cstr, NULL, NULL);
+		cl_program OpenCLProgram = clCreateProgramWithSource(get<3>(stuff), 1, &cstr, NULL, NULL);
 
 		// Build the program (OpenCL JIT compilation)
 		err = clBuildProgram(OpenCLProgram, 0, NULL, NULL, NULL, NULL);
@@ -246,7 +311,7 @@ public:
 			printf("Nie dziala\n");
 			char str[8192];
 			size_t len;
-			clGetProgramBuildInfo(OpenCLProgram, cdDevice, CL_PROGRAM_BUILD_LOG, 8192, str, &len);
+			clGetProgramBuildInfo(OpenCLProgram, get<1>(stuff), CL_PROGRAM_BUILD_LOG, 8192, str, &len);
 			if (len > 8192)
 			{
 				printf("Nie miesci sie\n");
@@ -268,11 +333,11 @@ public:
 
 		size_t WorkSize[1] = { size }; // one dimensional Range
 
-		clEnqueueNDRangeKernel(cqCommandQueue, OpenCLVectorAdd, 1, NULL,
+		clEnqueueNDRangeKernel(get<4>(stuff), OpenCLVectorAdd, 1, NULL,
 			WorkSize, NULL, 0, NULL, NULL);
 
 		// Copy the output in GPU memory back to CPU memory
-		clEnqueueReadBuffer(cqCommandQueue, GPUOutputVector, CL_FALSE, 0,
+		clEnqueueReadBuffer(get<4>(stuff), GPUOutputVector, CL_TRUE, 0,
 			size * sizeof(uint64_t), HostOutputVector.data(), 0, NULL, NULL);
 
 		for (int i = 0; i < size; i++)
@@ -281,8 +346,6 @@ public:
 		// Cleanup
 		clReleaseKernel(OpenCLVectorAdd);
 		clReleaseProgram(OpenCLProgram);
-		clReleaseCommandQueue(cqCommandQueue);
-		clReleaseContext(GPUContext);
 		clReleaseMemObject(GPUVector1);
 		clReleaseMemObject(GPUVector2);
 		clReleaseMemObject(GPUOutputVector);
@@ -290,7 +353,7 @@ public:
 	}
 
 
-	void vector_sub(vector<uint64_t>& input_vector1, vector<uint64_t>& input_vector2)
+	void vector_sub(tuple<cl_platform_id, cl_device_id, cl_context_properties, cl_context, cl_command_queue > stuff, vector<uint64_t>& input_vector1, vector<uint64_t>& input_vector2)
 	{
 		std::string S = kernel_load("VectorAdd.cl");
 
@@ -317,42 +380,22 @@ public:
 
 		//Get an OpenCL platform
 
-		cl_platform_id cpPlatform;
-		clGetPlatformIDs(1, &cpPlatform, NULL);
-
-		// Get a GPU device
-		cl_device_id cdDevice;
-		clGetDeviceIDs(cpPlatform, CL_DEVICE_TYPE_GPU, 1, &cdDevice, NULL);
-
-		char cBuffer[1024];
-		clGetDeviceInfo(cdDevice, CL_DEVICE_NAME, sizeof(cBuffer), &cBuffer, NULL);
-		//printf("CL_DEVICE_NAME: %s\n", cBuffer);
-		clGetDeviceInfo(cdDevice, CL_DRIVER_VERSION, sizeof(cBuffer), &cBuffer, NULL);
-		//printf("CL_DRIVER_VERSION: %s\n\n", cBuffer);
-		cl_context_properties properties[] = { CL_CONTEXT_PLATFORM, (uint64_t)cpPlatform, 0 };
-		// Create a context to run OpenCL enabled GPU
-
-		cl_context GPUContext = clCreateContextFromType(properties, CL_DEVICE_TYPE_GPU, NULL, NULL, NULL);
-
-		// Create a command-queue on the GPU device
-		cl_command_queue cqCommandQueue = clCreateCommandQueueWithProperties(GPUContext, cdDevice, 0, NULL);
-
 		// Allocate GPU memory for source vectors AND initialize from CPU memory
 
-		cl_mem GPUVector1 = clCreateBuffer(GPUContext, CL_MEM_READ_ONLY |
+		cl_mem GPUVector1 = clCreateBuffer(get<3>(stuff), CL_MEM_READ_ONLY |
 			CL_MEM_COPY_HOST_PTR, sizeof(uint64_t) * size, HostVector1.data(), NULL);
 
-		cl_mem GPUVector2 = clCreateBuffer(GPUContext, CL_MEM_READ_ONLY |
+		cl_mem GPUVector2 = clCreateBuffer(get<3>(stuff), CL_MEM_READ_ONLY |
 			CL_MEM_COPY_HOST_PTR, sizeof(uint64_t) * size, HostVector2.data(), NULL);
 
 		// Allocate output memory on GPU
-		cl_mem GPUOutputVector = clCreateBuffer(GPUContext, CL_MEM_WRITE_ONLY,
+		cl_mem GPUOutputVector = clCreateBuffer(get<3>(stuff), CL_MEM_WRITE_ONLY,
 			sizeof(uint64_t) * size, NULL, NULL);
 
 		const char* cstr = S.c_str();
 
 		// Create OpenCL program with source code
-		cl_program OpenCLProgram = clCreateProgramWithSource(GPUContext, 1, &cstr, NULL, NULL);
+		cl_program OpenCLProgram = clCreateProgramWithSource(get<3>(stuff), 1, &cstr, NULL, NULL);
 
 		// Build the program (OpenCL JIT compilation)
 		clBuildProgram(OpenCLProgram, 0, NULL, NULL, NULL, NULL);
@@ -372,11 +415,11 @@ public:
 
 		size_t WorkSize[1] = { size }; // one dimensional Range
 
-		clEnqueueNDRangeKernel(cqCommandQueue, OpenCLVectorAdd, 1, NULL,
+		clEnqueueNDRangeKernel(get<4>(stuff), OpenCLVectorAdd, 1, NULL,
 			WorkSize, NULL, 0, NULL, NULL);
 
 		// Copy the output in GPU memory back to CPU memory
-		clEnqueueReadBuffer(cqCommandQueue, GPUOutputVector, CL_TRUE, 0,
+		clEnqueueReadBuffer(get<4>(stuff), GPUOutputVector, CL_FALSE, 0,
 			size * sizeof(uint64_t), HostOutputVector.data(), 0, NULL, NULL);
 
 		for (int i = 0; i < size; i++)
@@ -385,8 +428,6 @@ public:
 		// Cleanup
 		clReleaseKernel(OpenCLVectorAdd);
 		clReleaseProgram(OpenCLProgram);
-		clReleaseCommandQueue(cqCommandQueue);
-		clReleaseContext(GPUContext);
 		clReleaseMemObject(GPUVector1);
 		clReleaseMemObject(GPUVector2);
 		clReleaseMemObject(GPUOutputVector);
