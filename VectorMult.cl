@@ -1,4 +1,4 @@
-const ulong p = 9223372036854775783;
+const ulong p = 9223372036854775783 - 1;
 
 ulong mult32_mod_p(ulong a)
 {

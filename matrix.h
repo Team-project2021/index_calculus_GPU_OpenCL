@@ -71,7 +71,6 @@ tuple<cl_platform_id, cl_device_id, cl_context_properties, cl_context, cl_comman
 class Matrix
 {
 private:
-	const uint64_t p = 9223372036854775783;
 	const size_t cols;
 	vector<uint64_t> matrix;
 	tuple<cl_platform_id, cl_device_id, cl_context_properties, cl_context, cl_command_queue > stuff = initialize_openCL();
@@ -99,8 +98,9 @@ public:
 		uint64_t rows = n_rows();
 		for (int i = start_row; i < rows; i++) {
 			uint64_t element = this->operator()(i, c);
-			uint64_t res = gcd(element, n);
-			if (res == 1) {
+			uint64_t x_inv, y_inv;
+			uint64_t res = gcdExtended(element, n, &x_inv, &y_inv);
+			if (res == 1 and multS(element, (x_inv + n) % n, n) == 1) {
 				return i;
 			}
 		}
@@ -158,9 +158,8 @@ public:
 		}
 	}
 
-	int gaussian_elimination(uint64_t q) {
+	int gaussian_elimination(uint64_t p) {
 		int invertable_row_index;
-
 
 		vector<uint64_t> temp;
 		vector<uint64_t> temp1;
@@ -175,7 +174,7 @@ public:
 		uint64_t x_inv1, y_inv1;
 
 		for (int i = 0; i < cols; i++) {
-			invertable_row_index = find_inv(i, q, i);
+			invertable_row_index = find_inv(i, p, i);
 			if (invertable_row_index == -1 or invertable_row_index < i)
 			{
 				return -1;
@@ -187,12 +186,15 @@ public:
 			swap_rows(i, invertable_row_index);
 			swap(X[i], X[invertable_row_index]);
 
-			xgcd = gcdExtended(this->operator()(i, i), q, &x_inv, &y_inv);
+			xgcd = gcdExtended(this->operator()(i, i), p, &x_inv, &y_inv);
 
-			x_inv = (x_inv + q) % q;
+			x_inv = (x_inv + p) % p;
+			//cout << multS(x_inv, this->operator()(i, i), p) << endl;
+			//if (multS(x_inv, this->operator()(i, i), p) != 1)
+			//	return -1;
 
 			vector_mult(stuff, temp, x_inv);
-			tempX = mult(tempX, x_inv);
+			tempX = multS(tempX, x_inv, p);
 
 			reassign_row(temp, i);
 			X[i] = tempX;
@@ -202,17 +204,17 @@ public:
 				temp = get_row(i);
 				tempX = X[i];
 
-				xgcd1 = gcdExtended(this->operator()(i, i), q - 1, &x_inv1, &y_inv1);
+				xgcd1 = gcdExtended(this->operator()(i, i), p, &x_inv1, &y_inv1);
 				vector_mult(stuff, temp, x_inv1);
-				tempX = mult(tempX, x_inv1);
+				tempX = multS(tempX, x_inv1, p);
 
 				temp1 = get_row(j);
 				tempX1 = X[j];
 				vector_mult(stuff, temp, at(j, i));
-				tempX = mult(tempX, at(j, i));
+				tempX = multS(tempX, at(j, i), p);
 
 				vector_sub(stuff, temp1, temp);
-				tempX1 = (tempX1 - tempX + q) % q;
+				tempX1 = (tempX1 - tempX + p) % p;
 				reassign_row(temp1, j);
 				X[j] = tempX1;
 			}
@@ -220,9 +222,9 @@ public:
 		return 0;
 	}
 
-	vector<uint64_t> solve_system(uint64_t q)
+	vector<uint64_t> solve_system(uint64_t p)
 	{
-		//int x = gaussian_elimination(q);
+		//uint64_t n = p - 1;
 
 		cout << "Po Gaussie " << endl;
 		print_matrix();
@@ -251,9 +253,9 @@ public:
 				tempX2 = X[j - 1];
 
 				vector_mult(stuff, temp1, at(j-1, i));
-				tempX1 = mult(tempX1, X[j - 1]);
+				tempX1 = multS(tempX1, X[j - 1], p);
 				vector_sub(stuff, temp2, temp1);
-				tempX2 = (tempX2 - tempX1 + q) % q;
+				tempX2 = (tempX2 - tempX1 + p) % p;
 
 				reassign_row(temp2, j - 1);
 				X[j - 1] = tempX2;
