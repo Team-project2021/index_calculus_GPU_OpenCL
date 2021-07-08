@@ -38,6 +38,22 @@ uint64_t multS(uint64_t a, uint64_t b, uint64_t p)
     return ((((A + B) % p + C) % p + D) % p);
 }
 
+uint64_t power_mod_p(uint64_t a, uint64_t b, uint64_t p)
+{
+    uint64_t acc = 1;
+    uint64_t pow = a;
+
+    while (b > 0)
+    {
+        if (b & 0x1)
+        {
+            acc = multS(acc, pow, p);
+        }
+        pow = multS(pow, pow, p);
+        b = b >> 1;
+    }
+    return acc;
+}
 //bool test_mult(uint64_t a, uint64_t b, uint64_t c)
 //{
 //    if (multS(a, b, p) == c)
