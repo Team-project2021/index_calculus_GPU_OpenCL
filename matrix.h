@@ -98,9 +98,10 @@ public:
 		uint64_t rows = n_rows();
 		for (int i = start_row; i < rows; i++) {
 			uint64_t element = this->operator()(i, c);
-			uint64_t x_inv, y_inv;
-			uint64_t res = gcdExtended(element, n, &x_inv, &y_inv);
-			if (res == 1 and multS(element, (x_inv + n) % n, n) == 1) {
+			//uint64_t x_inv, y_inv;
+			//uint64_t res = gcdExtended(element, n, &x_inv, &y_inv);
+			uint64_t res = gcd(element, n);
+			if (res == 1 ){//and multS(element, (x_inv + n) % n, n) == 1) {
 				return i;
 			}
 		}
@@ -169,7 +170,6 @@ public:
 		uint64_t xgcd;
 		uint64_t xgcd1;
 
-
 		uint64_t x_inv, y_inv;
 		uint64_t x_inv1, y_inv1;
 
@@ -189,9 +189,6 @@ public:
 			xgcd = gcdExtended(this->operator()(i, i), p, &x_inv, &y_inv);
 
 			x_inv = (x_inv + p) % p;
-		/*	cout << multS(x_inv, this->operator()(i, i), p) << endl;
-			if (multS(x_inv, this->operator()(i, i), p) != 1)
-				return -1;*/
 
 			vector_mult(stuff, temp, x_inv);
 			tempX = multS(tempX, x_inv, p);
@@ -224,42 +221,27 @@ public:
 
 	vector<uint64_t> solve_system(uint64_t p)
 	{
-		//uint64_t n = p - 1;
+		for (int i = cols - 1; i >= 0; i--) {
+			int pom = X[i];
+			for (int j = 0; j < cols - 1 - i; j++) {
+				pom -= multS(at(i, cols - 1 - j), X[cols - 1 - j], p);
+				if (pom < 0) {
 
-		cout << "Po Gaussie " << endl;
-		print_matrix();
-		for (int i = 0; i < X.size(); i++)
-			cout << X[i] << " ";
-		cout << endl;
-
-		vector<uint64_t> temp;
-		vector<uint64_t> temp1;
-		vector<uint64_t> temp2;
-
-		uint64_t tempX;
-		uint64_t tempX1;
-		uint64_t tempX2;
-
-		for (int i = cols - 1; i >= 0; i--)
-		{
-			temp = get_row(i);
-			tempX = X[i];
-
-			for (int j = i; j >= 1; j--)
-			{
-				temp1 = temp;
-				tempX1 = tempX;
-				temp2 = get_row(j-1);
-				tempX2 = X[j - 1];
-
-				vector_mult(stuff, temp1, at(j-1, i));
-				tempX1 = multS(tempX1, X[j - 1], p);
-				vector_sub(stuff, temp2, temp1);
-				tempX2 = (tempX2 - tempX1 + p) % p;
-
-				reassign_row(temp2, j - 1);
-				X[j - 1] = tempX2;
+					for (;;) {
+						if (pom < 1) {
+							pom = pom + p;
+						}
+						if (pom > 1) {
+							break;
+						}
+					}
+				}
 			}
+			X[i] = pom;
+		}
+
+		for (int i = 0;i < cols;i++) {
+			cout << X[i] << " ";
 		}
 		return X;
 	}
